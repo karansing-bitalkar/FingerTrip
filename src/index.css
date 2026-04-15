@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* New Premium Deep Teal + Rust Theme */
+    --background: 186 100% 97%;
+    --foreground: 185 95% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 185 95% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 185 95% 10%;
+
+    --primary: 20 50% 39%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 186 60% 88%;
+    --secondary-foreground: 185 95% 18%;
+
+    --muted: 186 30% 93%;
+    --muted-foreground: 185 20% 40%;
+
+    --accent: 185 95% 15%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 186 30% 85%;
+    --input: 186 30% 85%;
+    --ring: 20 50% 39%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 185 95% 10%;
+    --sidebar-foreground: 186 40% 90%;
+    --sidebar-primary: 20 50% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 185 90% 14%;
+    --sidebar-accent-foreground: 186 40% 90%;
+    --sidebar-border: 185 80% 16%;
+    --sidebar-ring: 20 50% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .font-sans {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+
+  .glass-dark {
+    background: rgba(0, 49, 53, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(175, 221, 229, 0.2);
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, #003135 0%, #024950 50%, #0FA4AF 100%);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, #964734 0%, #b85a44 100%);
+  }
+
+  .gradient-hero {
+    background: linear-gradient(180deg, rgba(0,49,53,0.3) 0%, rgba(0,49,53,0.7) 100%);
+  }
+
+  .gradient-card {
+    background: linear-gradient(145deg, #f0fafb 0%, #e6f6f8 100%);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #964734, #0FA4AF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-rust {
+    background: linear-gradient(135deg, #964734, #c0623d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-teal {
+    background: linear-gradient(135deg, #024950, #0FA4AF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(15, 164, 175, 0.18);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Brand color utilities */
+  .bg-brand-dark { background-color: #003135; }
+  .bg-brand-teal { background-color: #024950; }
+  .bg-brand-rust { background-color: #964734; }
+  .bg-brand-cyan { background-color: #0FA4AF; }
+  .bg-brand-light { background-color: #AFDDE5; }
+
+  .text-brand-dark { color: #003135; }
+  .text-brand-teal { color: #024950; }
+  .text-brand-rust { color: #964734; }
+  .text-brand-cyan { color: #0FA4AF; }
+  .text-brand-light { color: #AFDDE5; }
+
+  .border-brand-cyan { border-color: #0FA4AF; }
+  .border-brand-light { border-color: #AFDDE5; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e6f6f8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0FA4AF;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #024950;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Chat animations */
+@keyframes chat-bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+.chat-dot {
+  animation: chat-bounce 1.4s infinite;
+}
+.chat-dot:nth-child(2) { animation-delay: 0.2s; }
+.chat-dot:nth-child(3) { animation-delay: 0.4s; }
