@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Clock, User, Tag } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
@@ -76,6 +77,7 @@ export default function Blogs() {
           </motion.div>
 
           {/* Featured Post */}
+          <Link to={`/blogs/${featured.id}`}>
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="card-hover relative h-80 lg:h-96 rounded-3xl overflow-hidden cursor-pointer group">
             <img src={featured.image} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -91,6 +93,7 @@ export default function Blogs() {
               </div>
             </div>
           </motion.div>
+          </Link>
         </div>
       </section>
 
@@ -108,7 +111,8 @@ export default function Blogs() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {rest.map((post, i) => (
-              <motion.div key={post.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              <Link key={post.id} to={`/blogs/${post.id}`}>
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
                 className="card-hover bg-white rounded-2xl border border-orange-50 shadow-sm overflow-hidden cursor-pointer group">
                 <div className="relative h-44 overflow-hidden">
                   <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -127,6 +131,7 @@ export default function Blogs() {
                   </div>
                 </div>
               </motion.div>
+              </Link>
             ))}
           </div>
         </div>

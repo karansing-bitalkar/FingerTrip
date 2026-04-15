@@ -32,6 +32,7 @@ import BookingDetail from "./pages/BookingDetail";
 import ResetPassword from "./pages/ResetPassword";
 import VendorDetail from "./pages/VendorDetail";
 import PackageDetail from "./pages/PackageDetail";
+import BlogDetail from "./pages/BlogDetail";
 import NotFound from "./pages/NotFound";
 
 // Dashboard Layouts (pure layout components using <Outlet />)
@@ -108,6 +109,7 @@ const App = () => (
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/blogs" element={<Blogs />} />
+          <Route path="/blogs/:id" element={<BlogDetail />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact-support" element={<ContactSupport />} />
 
