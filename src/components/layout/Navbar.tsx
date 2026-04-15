@@ -84,8 +84,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     clearUser();
-    navigate('/');
-    window.location.reload();
+    navigate('/login');
   };
 
   const getDashboardPath = () => {

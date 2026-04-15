@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import ScrollToTop from "@/components/layout/ScrollToTop";
 import LiveChat from "@/components/features/LiveChat";
+import CompareBar from "@/components/features/CompareBar";
 import AdminProtectedRoute from "@/components/features/AdminProtectedRoute";
 
 // Public Pages
@@ -33,6 +34,7 @@ import ResetPassword from "./pages/ResetPassword";
 import VendorDetail from "./pages/VendorDetail";
 import PackageDetail from "./pages/PackageDetail";
 import BlogDetail from "./pages/BlogDetail";
+import Quiz from "./pages/Quiz";
 import NotFound from "./pages/NotFound";
 
 // Dashboard Layouts (pure layout components using <Outlet />)
@@ -72,7 +74,7 @@ function GlobalChat() {
   const isDashboard = location.pathname.includes('-dashboard');
   const isLogin = location.pathname.includes('login');
   if (isDashboard || isLogin) return null;
-  return <LiveChat />;
+  return <><LiveChat /><CompareBar /></>;
 }
 
 const App = () => (
@@ -110,6 +112,7 @@ const App = () => (
           <Route path="/careers" element={<Careers />} />
           <Route path="/blogs" element={<Blogs />} />
           <Route path="/blogs/:id" element={<BlogDetail />} />
+          <Route path="/quiz" element={<Quiz />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact-support" element={<ContactSupport />} />
 

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, Clock, Star, X, ChevronUp, ChevronDown, Calendar, Users, Globe } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import PackageCard from '@/components/features/PackageCard';
+import CompareBar from '@/components/features/CompareBar';
 import { PACKAGES } from '@/constants/data';
 import type { Package } from '@/types';
 
@@ -47,9 +48,13 @@ export default function Packages() {
   const [destination, setDestination] = useState('All Destinations');
   const [travelers, setTravelers] = useState(1);
 
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
+
   const hasActiveFilters = search || category !== 'All' || maxPrice < 10000 || dateFrom || dateTo || destination !== 'All Destinations' || travelers > 1 || duration !== 'All';
 
   const clearAllFilters = () => {
+    setPage(1);
     setSearch('');
     setCategory('All');
     setDuration('All');
@@ -61,7 +66,7 @@ export default function Packages() {
     setTravelers(1);
   };
 
-  const filtered = allPackages.filter((p) => {
+  const allFiltered = allPackages.filter((p) => {
     const matchSearch = p.title.toLowerCase().includes(search.toLowerCase()) || p.destination.toLowerCase().includes(search.toLowerCase());
     const matchCat = category === 'All' || p.category === category;
     const matchPrice = p.price <= maxPrice;
@@ -74,6 +79,9 @@ export default function Packages() {
     if (sortBy === 'discount') return (b.discount || 0) - (a.discount || 0);
     return (b.trending ? 1 : 0) - (a.trending ? 1 : 0);
   });
+
+  const totalPages = Math.ceil(allFiltered.length / ITEMS_PER_PAGE);
+  const filtered = allFiltered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   return (
     <div className="min-h-screen bg-background">
@@ -309,7 +317,7 @@ export default function Packages() {
               </AnimatePresence>
 
               <div className="flex items-center justify-between mb-6">
-                <p className="text-gray-500 text-sm">{filtered.length} packages found</p>
+                <p className="text-gray-500 text-sm">{allFiltered.length} packages found</p>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
                   All packages are verified & rated
@@ -327,11 +335,34 @@ export default function Packages() {
                   <p className="text-gray-400">Try adjusting your filters</p>
                 </div>
               )}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-10">
+                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-white border border-orange-200 text-orange-600 text-sm font-semibold rounded-xl hover:bg-orange-50 disabled:opacity-40 transition-colors">
+                    ← Prev
+                  </button>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button key={i} onClick={() => setPage(i + 1)}
+                      className={`w-10 h-10 rounded-xl text-sm font-bold transition-all ${
+                        page === i + 1 ? 'bg-orange-500 text-white shadow-md shadow-orange-200' : 'bg-white border border-orange-100 text-gray-600 hover:bg-orange-50'
+                      }`}>
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-white border border-orange-200 text-orange-600 text-sm font-semibold rounded-xl hover:bg-orange-50 disabled:opacity-40 transition-colors">
+                    Next →
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </section>
 
+      <CompareBar />
       <Footer />
     </div>
   );

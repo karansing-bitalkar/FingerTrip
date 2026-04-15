@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Star, Clock, Tag, Building2, Share2, Copy, Check, Heart } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
+import { Star, Clock, Tag, Building2, Share2, Copy, Check, Heart, GitCompare } from 'lucide-react';
 import BookingWizard from '@/components/features/BookingWizard';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useCompare } from '@/hooks/useCompare';
+import { getStoredUser } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import type { Package } from '@/types';
 
@@ -17,16 +19,40 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
   const [copied, setCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const { toggleWishlist, isWishlisted } = useWishlist();
+  const { toggleCompare, isInCompare, compareList } = useCompare();
+  const navigate = useNavigate();
   const wishlisted = isWishlisted(pkg.id);
+  const inCompare = isInCompare(pkg.id);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleWishlist(pkg);
-    toast.success(isWishlisted(pkg.id) ? 'Removed from wishlist' : `Added to wishlist!`);
+    toast.success(isWishlisted(pkg.id) ? 'Removed from wishlist' : 'Added to wishlist!');
+  };
+
+  const handleCompareToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!inCompare && compareList.length >= 3) {
+      toast.error('Max 3 packages can be compared at once.');
+      return;
+    }
+    const added = toggleCompare(pkg);
+    toast.success(added ? 'Added to compare!' : 'Removed from compare.');
+  };
+
+  const handleBookNow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const user = getStoredUser();
+    if (!user) {
+      toast.error('Please log in to book a package.');
+      navigate('/login');
+      return;
+    }
+    setBookingOpen(true);
   };
 
   const shareText = `Check out ${pkg.title} — ${pkg.duration} from $${pkg.price.toLocaleString()}/person on FingerTrip! ✈️`;
-  const shareUrl = `${window.location.origin}/packages`;
+  const shareUrl = `${window.location.origin}/packages/${pkg.id}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
@@ -35,13 +61,8 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleWhatsApp = () => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`, '_blank');
-  };
-
-  const handleTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
-  };
+  const handleWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`, '_blank');
+  const handleTwitter = () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
 
   return (
     <>
@@ -52,25 +73,20 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, delay: index * 0.1 }}
-        className="card-hover group bg-white rounded-2xl overflow-hidden shadow-md border border-[#AFDDE5]/30"
+        className={`card-hover group bg-white rounded-2xl overflow-hidden shadow-md border-2 transition-all ${
+          inCompare ? 'border-[#0FA4AF] shadow-[#0FA4AF]/20 shadow-lg' : 'border-[#AFDDE5]/30'
+        }`}
       >
         {/* Image */}
         <div className="relative h-52 overflow-hidden">
-          <img
-            src={pkg.image}
-            alt={pkg.title}
+          <img src={pkg.image} alt={pkg.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1488085061387-422e29b40080?w=600&q=80`;
-            }}
-          />
+            onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=600&q=80'; }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-          {/* Discount Badge */}
           {pkg.discount && (
             <div className="absolute top-3 left-3 bg-gradient-to-r from-[#964734] to-[#0FA4AF] text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
-              <Tag className="w-3 h-3" />
-              {pkg.discount}% OFF
+              <Tag className="w-3 h-3" /> {pkg.discount}% OFF
             </div>
           )}
           {pkg.trending && (
@@ -79,46 +95,38 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
             </div>
           )}
 
-          {/* Wishlist heart */}
-          <button
-            onClick={handleWishlistToggle}
-            className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm shadow-md transition-all duration-200 ${
-              wishlisted ? 'bg-red-500 scale-110' : 'bg-white/20 hover:bg-white/40'
-            }`}
-            title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-          >
-            <Heart className={`w-4 h-4 transition-all ${wishlisted ? 'text-white fill-white' : 'text-white'}`} />
-          </button>
-
-          {/* Duration on image */}
-          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-white text-sm font-medium">
-            <Clock className="w-4 h-4 text-[#AFDDE5]" />
-            {pkg.duration}
+          {/* Bottom row: heart + duration */}
+          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-white text-sm font-medium">
+              <Clock className="w-4 h-4 text-[#AFDDE5]" /> {pkg.duration}
+            </div>
+            <button onClick={handleWishlistToggle}
+              className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm shadow-md transition-all ${wishlisted ? 'bg-red-500 scale-110' : 'bg-white/20 hover:bg-white/40'}`}
+              title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}>
+              <Heart className={`w-4 h-4 ${wishlisted ? 'text-white fill-white' : 'text-white'}`} />
+            </button>
           </div>
         </div>
 
         {/* Content */}
         <div className="p-5">
-          {/* Vendor */}
           <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-2">
             <Building2 className="w-3.5 h-3.5 text-[#0FA4AF]" />
             <span className="text-[#024950] font-medium">{pkg.vendor}</span>
           </div>
 
           <Link to={`/packages/${pkg.id}`} className="hover:text-[#0FA4AF] transition-colors">
-          <h3 className="text-lg font-bold text-[#003135] font-display mb-1.5 line-clamp-1">{pkg.title}</h3>
-        </Link>
+            <h3 className="text-lg font-bold text-[#003135] font-display mb-1.5 line-clamp-1">{pkg.title}</h3>
+          </Link>
 
-          {/* Rating */}
           <div className="flex items-center gap-1.5 mb-3">
             {[...Array(5)].map((_, i) => (
               <Star key={i} className={`w-3.5 h-3.5 ${i < Math.floor(pkg.rating) ? 'text-[#964734] fill-[#964734]' : 'text-gray-200 fill-gray-200'}`} />
             ))}
             <span className="text-sm font-semibold text-gray-700">{pkg.rating}</span>
-            <span className="text-xs text-gray-400">({pkg.reviews} reviews)</span>
+            <span className="text-xs text-gray-400">({pkg.reviews})</span>
           </div>
 
-          {/* Itinerary Preview */}
           <div className="bg-[#AFDDE5]/20 rounded-xl p-3 mb-4 border border-[#AFDDE5]/40">
             <p className="text-xs font-semibold text-[#024950] mb-1.5">Itinerary Highlights</p>
             <div className="space-y-1">
@@ -128,29 +136,45 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
                   <span className="line-clamp-1">{item}</span>
                 </div>
               ))}
-              {pkg.itinerary.length > 3 && (
-                <p className="text-xs text-[#0FA4AF] font-medium">+{pkg.itinerary.length - 3} more days</p>
-              )}
+              {pkg.itinerary.length > 3 && <p className="text-xs text-[#0FA4AF] font-medium">+{pkg.itinerary.length - 3} more days</p>}
             </div>
+          </div>
+
+          {/* Compare checkbox row */}
+          <div className="flex items-center gap-2 mb-3">
+            <button
+              onClick={handleCompareToggle}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+                inCompare
+                  ? 'bg-[#0FA4AF] text-white border-[#0FA4AF]'
+                  : 'bg-white text-gray-500 border-gray-200 hover:border-[#0FA4AF] hover:text-[#0FA4AF]'
+              }`}
+            >
+              <GitCompare className="w-3.5 h-3.5" />
+              {inCompare ? 'Comparing' : 'Compare'}
+              {inCompare && <Check className="w-3 h-3" />}
+            </button>
+            {inCompare && (
+              <AnimatePresence>
+                <motion.span initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-[10px] text-[#0FA4AF] font-medium">
+                  {compareList.length}/3 selected
+                </motion.span>
+              </AnimatePresence>
+            )}
           </div>
 
           {/* Price & CTA */}
           <div className="flex items-center justify-between">
             <div>
-              {pkg.originalPrice && (
-                <span className="text-xs text-gray-400 line-through">${pkg.originalPrice.toLocaleString()}</span>
-              )}
+              {pkg.originalPrice && <span className="text-xs text-gray-400 line-through">${pkg.originalPrice.toLocaleString()}</span>}
               <div className="text-xl font-bold text-[#964734]">${pkg.price.toLocaleString()}</div>
               <span className="text-xs text-gray-400">per person</span>
             </div>
             <div className="flex items-center gap-2">
-              {/* Share button */}
+              {/* Share */}
               <div className="relative">
-                <button
-                  onClick={() => setShareOpen(!shareOpen)}
-                  className="w-9 h-9 rounded-xl bg-[#f0fafb] border border-[#AFDDE5] flex items-center justify-center text-[#0FA4AF] hover:bg-[#AFDDE5]/40 transition-colors"
-                  title="Share"
-                >
+                <button onClick={() => setShareOpen(!shareOpen)}
+                  className="w-9 h-9 rounded-xl bg-[#f0fafb] border border-[#AFDDE5] flex items-center justify-center text-[#0FA4AF] hover:bg-[#AFDDE5]/40 transition-colors">
                   <Share2 className="w-4 h-4" />
                 </button>
                 {shareOpen && (
@@ -172,16 +196,12 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
                   </div>
                 )}
               </div>
-              <Link
-                to={`/packages/${pkg.id}`}
-                className="px-4 py-2.5 bg-[#f0fafb] border border-[#AFDDE5] text-[#003135] text-xs font-semibold rounded-xl hover:border-[#0FA4AF] transition-all hidden sm:flex items-center"
-              >
+              <Link to={`/packages/${pkg.id}`}
+                className="px-4 py-2.5 bg-[#f0fafb] border border-[#AFDDE5] text-[#003135] text-xs font-semibold rounded-xl hover:border-[#0FA4AF] transition-all hidden sm:flex items-center">
                 Details
               </Link>
-              <button
-                onClick={() => setBookingOpen(true)}
-                className="px-5 py-2.5 bg-gradient-to-r from-[#003135] to-[#0FA4AF] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#0FA4AF]/25 transition-all"
-              >
+              <button onClick={handleBookNow}
+                className="px-5 py-2.5 bg-gradient-to-r from-[#003135] to-[#0FA4AF] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#0FA4AF]/25 transition-all">
                 Book Now
               </button>
             </div>
