@@ -1,10 +1,23 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Star, CheckCircle, Package, MapPin, ArrowRight, Building2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Star, CheckCircle, Package, MapPin, ArrowRight, Building2, X, BarChart2, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { VENDORS } from '@/constants/data';
+
+const VENDOR_EXTRA_RESPONSE: Record<string, string> = {
+  '1': '< 2 hours', '2': '< 3 hours', '3': '< 1 hour',
+  '4': '< 2 hours', '5': '< 2 hours', '6': '< 3 hours',
+};
+const VENDOR_CREDENTIALS: Record<string, string[]> = {
+  '1': ['IATA Certified', 'ISO 9001:2015', 'ATOL Protected'],
+  '2': ['Swiss Tourism Board', 'IATA Certified', 'TripAdvisor Excellence'],
+  '3': ['Ministry of Tourism India', 'IATA Certified', 'Eco-Tourism Certified'],
+  '4': ['DTCM Licensed', 'IATA Certified', 'Five-Star Partner'],
+  '5': ['Indonesia Ministry of Tourism', 'IATA Certified', 'Green Tourism Award'],
+  '6': ['TAT Certified', 'IATA Certified', 'Responsible Tourism'],
+};
 
 const vendorBenefits = [
   { title: 'Global Reach', desc: '150,000+ active travelers on our platform ready to book your packages.', icon: '🌍' },
@@ -17,6 +30,18 @@ const vendorBenefits = [
 
 export default function Vendors() {
   const [search, setSearch] = useState('');
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [compareOpen, setCompareOpen] = useState(false);
+
+  const toggleCompare = (id: string) => {
+    setCompareIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((x) => x !== id)
+        : prev.length < 3 ? [...prev, id] : prev
+    );
+  };
+
+  const compareVendors = VENDORS.filter((v) => compareIds.includes(v.id));
 
   const filtered = VENDORS.filter((v) =>
     v.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -100,6 +125,25 @@ export default function Vendors() {
                 transition={{ delay: i * 0.1 }}
                 className="card-hover bg-white rounded-2xl border border-orange-50 shadow-sm overflow-hidden"
               >
+                {/* Compare checkbox */}
+                <div className="px-5 pt-4 pb-0 flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={compareIds.includes(vendor.id)}
+                      onChange={() => toggleCompare(vendor.id)}
+                      disabled={!compareIds.includes(vendor.id) && compareIds.length >= 3}
+                      className="w-4 h-4 rounded accent-orange-500 cursor-pointer"
+                    />
+                    <span className="text-xs font-medium text-gray-500">
+                      {compareIds.includes(vendor.id) ? 'Added to compare' : compareIds.length >= 3 ? 'Max 3 selected' : 'Compare'}
+                    </span>
+                  </label>
+                  {compareIds.includes(vendor.id) && (
+                    <span className="text-[10px] bg-orange-100 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full font-semibold">Selected</span>
+                  )}
+                </div>
+
                 {/* Header */}
                 <div className="h-28 bg-gradient-to-br from-orange-100 to-amber-100 relative">
                   <img src={vendor.logo} alt={vendor.name} className="absolute inset-0 w-full h-full object-cover opacity-30" />
@@ -182,6 +226,183 @@ export default function Vendors() {
       </section>
 
       <Footer />
+
+      {/* ─── Sticky Compare Bar ─── */}
+      <AnimatePresence>
+        {compareIds.length >= 2 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            className="fixed bottom-0 left-0 right-0 z-[90] bg-white border-t border-orange-100 shadow-2xl px-4 py-4"
+          >
+            <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-orange-500" />
+                <span className="font-bold text-gray-900 text-sm">{compareIds.length} vendors selected</span>
+              </div>
+              <div className="flex gap-3 flex-1 flex-wrap">
+                {compareVendors.map((v) => (
+                  <div key={v.id} className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-1.5">
+                    <img src={v.logo} alt={v.name} className="w-6 h-6 rounded-lg object-cover" />
+                    <span className="text-xs font-semibold text-orange-800">{v.name}</span>
+                    <button onClick={() => toggleCompare(v.id)} className="text-orange-400 hover:text-orange-600 transition-colors">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setCompareIds([])} className="px-4 py-2 text-sm font-medium text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+                  Clear
+                </button>
+                <button
+                  onClick={() => setCompareOpen(true)}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all text-sm"
+                >
+                  <BarChart2 className="w-4 h-4" /> Compare Now
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── Compare Modal ─── */}
+      <AnimatePresence>
+        {compareOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setCompareOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92 }} transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+            >
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-5 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <BarChart2 className="w-5 h-5 text-white" />
+                  <h3 className="text-xl font-bold text-white font-display">Vendor Comparison</h3>
+                </div>
+                <button onClick={() => setCompareOpen(false)} className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="overflow-x-auto flex-1">
+                <table className="w-full min-w-[600px]">
+                  <thead>
+                    <tr className="border-b border-orange-50 bg-orange-50/50">
+                      <td className="px-6 py-4 text-xs font-bold text-gray-400 uppercase w-36">Attribute</td>
+                      {compareVendors.map((v) => (
+                        <td key={v.id} className="px-6 py-4 text-center">
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-orange-100">
+                              <img src={v.logo} alt={v.name} className="w-full h-full object-cover" />
+                            </div>
+                            <span className="font-bold text-gray-900 text-sm text-center leading-tight">{v.name}</span>
+                          </div>
+                        </td>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {[
+                      {
+                        label: 'Rating',
+                        render: (v: typeof compareVendors[0]) => (
+                          <div className="flex items-center justify-center gap-1">
+                            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                            <span className="font-bold text-gray-900">{v.rating}</span>
+                            <span className="text-xs text-gray-400">/ 5.0</span>
+                          </div>
+                        ),
+                      },
+                      {
+                        label: 'Reviews',
+                        render: (v: typeof compareVendors[0]) => (
+                          <span className="font-semibold text-gray-800">{v.reviews.toLocaleString()}</span>
+                        ),
+                      },
+                      {
+                        label: 'Packages',
+                        render: (v: typeof compareVendors[0]) => (
+                          <span className="font-semibold text-gray-800">{v.packages} packages</span>
+                        ),
+                      },
+                      {
+                        label: 'Response Time',
+                        render: (v: typeof compareVendors[0]) => (
+                          <span className="font-semibold text-emerald-600">{VENDOR_EXTRA_RESPONSE[v.id] || 'N/A'}</span>
+                        ),
+                      },
+                      {
+                        label: 'Verified',
+                        render: (v: typeof compareVendors[0]) => (
+                          v.verified
+                            ? <span className="flex items-center justify-center gap-1 text-emerald-600 font-semibold text-xs"><CheckCircle className="w-4 h-4" /> Verified</span>
+                            : <span className="text-gray-400 text-xs">Not verified</span>
+                        ),
+                      },
+                      {
+                        label: 'Credentials',
+                        render: (v: typeof compareVendors[0]) => (
+                          <div className="flex flex-col gap-1 items-center">
+                            {(VENDOR_CREDENTIALS[v.id] || []).map((c) => (
+                              <span key={c} className="flex items-center gap-1 text-[10px] bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-full">
+                                <Award className="w-2.5 h-2.5" /> {c}
+                              </span>
+                            ))}
+                          </div>
+                        ),
+                      },
+                      {
+                        label: 'Specialties',
+                        render: (v: typeof compareVendors[0]) => (
+                          <div className="flex flex-wrap gap-1 justify-center">
+                            {v.specialties.map((s) => (
+                              <span key={s} className="text-[10px] bg-orange-50 text-orange-600 border border-orange-100 px-2 py-0.5 rounded-full">{s}</span>
+                            ))}
+                          </div>
+                        ),
+                      },
+                      {
+                        label: 'Location',
+                        render: (v: typeof compareVendors[0]) => (
+                          <span className="flex items-center justify-center gap-1 text-sm text-gray-600">
+                            <MapPin className="w-3.5 h-3.5 text-orange-400" /> {v.location}
+                          </span>
+                        ),
+                      },
+                    ].map((row) => (
+                      <tr key={row.label} className="hover:bg-orange-50/30 transition-colors">
+                        <td className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">{row.label}</td>
+                        {compareVendors.map((v) => (
+                          <td key={v.id} className="px-6 py-4 text-center text-sm">{row.render(v)}</td>
+                        ))}
+                      </tr>
+                    ))}
+                    {/* View Profile Row */}
+                    <tr className="bg-orange-50/30">
+                      <td className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Profile</td>
+                      {compareVendors.map((v) => (
+                        <td key={v.id} className="px-6 py-4 text-center">
+                          <Link to={`/vendors/${v.id}`} onClick={() => setCompareOpen(false)}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-800 transition-colors">
+                            View Profile <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

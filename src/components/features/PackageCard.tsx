@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Star, Clock, Tag, Building2, Share2, Copy, Check } from 'lucide-react';
+import { Star, Clock, Tag, Building2, Share2, Copy, Check, Heart } from 'lucide-react';
 import BookingWizard from '@/components/features/BookingWizard';
+import { useWishlist } from '@/hooks/useWishlist';
 import { toast } from 'sonner';
 import type { Package } from '@/types';
 
@@ -15,6 +16,14 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const { toggleWishlist, isWishlisted } = useWishlist();
+  const wishlisted = isWishlisted(pkg.id);
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleWishlist(pkg);
+    toast.success(isWishlisted(pkg.id) ? 'Removed from wishlist' : `Added to wishlist!`);
+  };
 
   const shareText = `Check out ${pkg.title} — ${pkg.duration} from $${pkg.price.toLocaleString()}/person on FingerTrip! ✈️`;
   const shareUrl = `${window.location.origin}/packages`;
@@ -70,6 +79,17 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
             </div>
           )}
 
+          {/* Wishlist heart */}
+          <button
+            onClick={handleWishlistToggle}
+            className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm shadow-md transition-all duration-200 ${
+              wishlisted ? 'bg-red-500 scale-110' : 'bg-white/20 hover:bg-white/40'
+            }`}
+            title={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
+            <Heart className={`w-4 h-4 transition-all ${wishlisted ? 'text-white fill-white' : 'text-white'}`} />
+          </button>
+
           {/* Duration on image */}
           <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-white text-sm font-medium">
             <Clock className="w-4 h-4 text-[#AFDDE5]" />
@@ -85,7 +105,9 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
             <span className="text-[#024950] font-medium">{pkg.vendor}</span>
           </div>
 
+          <Link to={`/packages/${pkg.id}`} className="hover:text-[#0FA4AF] transition-colors">
           <h3 className="text-lg font-bold text-[#003135] font-display mb-1.5 line-clamp-1">{pkg.title}</h3>
+        </Link>
 
           {/* Rating */}
           <div className="flex items-center gap-1.5 mb-3">
@@ -150,6 +172,12 @@ export default function PackageCard({ pkg, index = 0 }: Props) {
                   </div>
                 )}
               </div>
+              <Link
+                to={`/packages/${pkg.id}`}
+                className="px-4 py-2.5 bg-[#f0fafb] border border-[#AFDDE5] text-[#003135] text-xs font-semibold rounded-xl hover:border-[#0FA4AF] transition-all hidden sm:flex items-center"
+              >
+                Details
+              </Link>
               <button
                 onClick={() => setBookingOpen(true)}
                 className="px-5 py-2.5 bg-gradient-to-r from-[#003135] to-[#0FA4AF] text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-[#0FA4AF]/25 transition-all"

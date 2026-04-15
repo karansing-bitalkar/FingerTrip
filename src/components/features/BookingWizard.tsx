@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Calendar, Package, CreditCard, CheckCircle, ChevronRight, ChevronLeft, MapPin, Users, Star, Shield, Lock } from 'lucide-react';
 import { PACKAGES } from '@/constants/data';
+import AvailabilityCalendar from '@/components/features/AvailabilityCalendar';
 import type { Package as TPackage } from '@/types';
 
 interface Props {
@@ -240,9 +241,24 @@ export default function BookingWizard({ isOpen, onClose, preselectedPackage }: P
                       </select>
                     </div>
                   </div>
+
+                  {/* Availability Calendar */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 block flex items-center gap-1">
+                      <Calendar className="w-3 h-3" /> Availability Calendar
+                    </label>
+                    <AvailabilityCalendar
+                      basePrice={selectedPkg?.price || 0}
+                      onRangeChange={(from, to) => {
+                        if (from) setTravelData((d) => ({ ...d, departureDate: from.toISOString().split('T')[0] }));
+                        if (to) setTravelData((d) => ({ ...d, returnDate: to.toISOString().split('T')[0] }));
+                      }}
+                    />
+                  </div>
+
                   <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Special Requests (Optional)</label>
-                    <textarea rows={3} value={travelData.specialRequests}
+                    <textarea rows={2} value={travelData.specialRequests}
                       onChange={(e) => setTravelData({ ...travelData, specialRequests: e.target.value })}
                       placeholder="Dietary requirements, accessibility needs, celebrations..."
                       className="w-full px-4 py-3 bg-[#f0fafb] border border-[#AFDDE5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0FA4AF]/50 resize-none" />

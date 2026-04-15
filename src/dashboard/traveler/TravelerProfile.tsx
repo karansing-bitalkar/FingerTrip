@@ -239,6 +239,134 @@ export default function TravelerProfile() {
         <div className="bg-white rounded-2xl border border-orange-50 shadow-sm p-6">
           <h2 className="text-lg font-bold text-gray-900 font-display mb-1">Email Notification Preferences</h2>
           <p className="text-gray-400 text-sm mb-6">Choose which emails you'd like to receive from FingerTrip.</p>
+
+          {/* Email Preview Panel */}
+          <div className="mb-8 p-5 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border border-orange-100">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-gray-800">Email Preview</h3>
+              <p className="text-xs text-gray-400">See what each email looks like</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {[
+                {
+                  type: 'bookingConfirmations',
+                  subject: '✅ Your Booking is Confirmed!',
+                  preview: 'Hi Alex, your Maldives Luxury Escape booking #BK001 is confirmed for June 15.',
+                  badge: 'Confirmation',
+                  color: 'emerald',
+                  icon: '✅',
+                },
+                {
+                  type: 'tripReminders',
+                  subject: '🔔 Your Trip is in 7 Days!',
+                  preview: 'Don\'t forget — your Maldives escape departs June 15. Time to pack your bags!',
+                  badge: 'Reminder',
+                  color: 'blue',
+                  icon: '🔔',
+                },
+                {
+                  type: 'paymentReceipts',
+                  subject: '🧾 Payment Receipt — $9,998',
+                  preview: 'Payment of $9,998 received on Apr 7, 2026 for Maldives Luxury Escape.',
+                  badge: 'Receipt',
+                  color: 'purple',
+                  icon: '🧾',
+                },
+                {
+                  type: 'reviewRequests',
+                  subject: '⭐ How Was Your Trip?',
+                  preview: 'You recently completed the Bali Spiritual Retreat. We would love your review!',
+                  badge: 'Review',
+                  color: 'amber',
+                  icon: '⭐',
+                },
+                {
+                  type: 'specialOffers',
+                  subject: '🎁 30% Off Swiss Alps — Limited!',
+                  preview: 'Exclusive offer for FingerTrip members. Book before April 30 to save big!',
+                  badge: 'Offer',
+                  color: 'rose',
+                  icon: '🎁',
+                },
+                {
+                  type: 'newsletter',
+                  subject: '📰 FingerTrip April Newsletter',
+                  preview: 'Top 10 summer destinations, travel tips for Bali, and new vendor spotlights.',
+                  badge: 'Newsletter',
+                  color: 'indigo',
+                  icon: '📰',
+                },
+              ].map(({ type, subject, preview, badge, color, icon }) => {
+                const isEnabled = emailPrefs[type as keyof typeof emailPrefs];
+                const colorMap: Record<string, string> = {
+                  emerald: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                  blue: 'bg-blue-100 text-blue-700 border-blue-200',
+                  purple: 'bg-purple-100 text-purple-700 border-purple-200',
+                  amber: 'bg-amber-100 text-amber-700 border-amber-200',
+                  rose: 'bg-rose-100 text-rose-700 border-rose-200',
+                  indigo: 'bg-indigo-100 text-indigo-700 border-indigo-200',
+                };
+                return (
+                  <div
+                    key={type}
+                    className={`rounded-2xl border overflow-hidden transition-all ${
+                      isEnabled ? 'border-orange-200 shadow-sm' : 'border-gray-200 opacity-60 grayscale'
+                    }`}
+                  >
+                    {/* Email client header mockup */}
+                    <div className="bg-white px-3 py-2 border-b border-gray-100 flex items-center gap-1.5">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 rounded-full bg-red-400" />
+                        <div className="w-2 h-2 rounded-full bg-amber-400" />
+                        <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                      </div>
+                      <span className="text-[9px] text-gray-400 font-mono ml-1 truncate flex-1">{subject}</span>
+                    </div>
+                    <div className="bg-gradient-to-b from-gray-50 to-white p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-[10px]">F</div>
+                        <div>
+                          <div className="text-[9px] font-bold text-gray-800">FingerTrip</div>
+                          <div className="text-[8px] text-gray-400">no-reply@fingertrip.com</div>
+                        </div>
+                        <span className={`ml-auto text-[8px] font-semibold px-1.5 py-0.5 rounded-full border ${colorMap[color]}`}>{badge}</span>
+                      </div>
+                      <div className="text-[9px] font-bold text-gray-800 mb-1">{subject}</div>
+                      <p className="text-[8px] text-gray-500 leading-relaxed line-clamp-3">{preview}</p>
+                      <div className="mt-2 w-full py-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[8px] font-bold rounded-lg text-center">
+                        View in FingerTrip →
+                      </div>
+                    </div>
+                    <div className={`px-3 py-1.5 flex items-center justify-between ${isEnabled ? 'bg-orange-50' : 'bg-gray-50'}`}>
+                      <span className={`text-[9px] font-bold ${ isEnabled ? 'text-orange-600' : 'text-gray-400'}`}>{isEnabled ? '✓ Active' : '✗ Paused'}</span>
+                      <button
+                        onClick={() => {
+                          setEmailPrefs((prev) => ({ ...prev, [type]: !prev[type as keyof typeof emailPrefs] }));
+                          toast.success(isEnabled ? 'Email type paused.' : 'Email type enabled!');
+                        }}
+                        className="text-[9px] text-orange-500 font-semibold hover:text-orange-700 transition-colors"
+                      >
+                        {isEnabled ? 'Send Test →' : 'Enable'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={() => {
+                  const testType = Object.entries(emailPrefs).find(([, v]) => v)?.[0];
+                  if (testType) toast.success(`Test email sent for "${testType.replace(/([A-Z])/g, ' $1').trim()}"! Check your inbox.`);
+                  else toast.error('Enable at least one email type to send a test.');
+                }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-orange-200 text-orange-600 text-sm font-semibold rounded-xl hover:bg-orange-50 transition-colors shadow-sm"
+              >
+                📨 Send Test Email
+              </button>
+              <p className="text-xs text-gray-400 self-center">Sends a preview to your registered email address.</p>
+            </div>
+          </div>
           <div className="space-y-3">
             {[
               { key: 'bookingConfirmations', label: 'Booking Confirmations', desc: 'Receive confirmation emails whenever a booking is placed or updated.', icon: '✅' },

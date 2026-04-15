@@ -31,6 +31,7 @@ import ContactSupport from "./pages/ContactSupport";
 import BookingDetail from "./pages/BookingDetail";
 import ResetPassword from "./pages/ResetPassword";
 import VendorDetail from "./pages/VendorDetail";
+import PackageDetail from "./pages/PackageDetail";
 import NotFound from "./pages/NotFound";
 
 // Dashboard Layouts (pure layout components using <Outlet />)
@@ -86,6 +87,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/destinations" element={<Destinations />} />
           <Route path="/packages" element={<Packages />} />
+          <Route path="/packages/:id" element={<PackageDetail />} />
           <Route path="/vendors" element={<Vendors />} />
           <Route path="/vendors/:id" element={<VendorDetail />} />
           <Route path="/about" element={<About />} />
